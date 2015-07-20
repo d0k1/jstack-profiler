@@ -134,13 +134,16 @@ public class Converter {
 	public Measure parseJstack(PushBackBufferedReader br) throws IOException {
 		
 		Measure result = new Measure();
+		
 		ThreadInfo thread = parseThread(br);
+		result.addThread(thread);
+		
 		while(thread!=null){
 			thread = parseThread(br);
 			if(thread==null){
 				break;
 			}
-			result.threads.add(thread);
+			result.addThread(thread);
 		}
 		return result;
 	}
