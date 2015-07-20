@@ -1,31 +1,32 @@
 package com.focusit.jstack;
 
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.util.Date;
 
-import com.focusit.jstack.Converter.PushBackBufferedReader;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 
 public class App {
-
-	public static void main(String[] args) throws IOException {
+	
+	public static void main(String[] args) throws IOException, ParseException {
 		System.out.println("Start");
+		Options options = new Options();
+		options.addOption(new Option("d", true, "Directory where jstack file(s) located"));
 		
-		File stack = new File("jstack__20151707_171800.txt");
-		Date stackDate = new Date(stack.lastModified());
+		CommandLineParser parser = new DefaultParser();
+		CommandLine cmd = parser.parse(options, args, true);
 		
-		PushBackBufferedReader br = new PushBackBufferedReader(new FileReader(stack));
+		if(!cmd.hasOption('d')){
+			System.err.println("Directory with jstack not provided. Use -d<Directory> option");
+			System.exit(1);
+		}
+
+		Analyzer analyzer = new Analyzer();
+		analyzer.readJstacks(cmd.getOptionValue('d'));
 		
-		br.readLine();
-		br.readLine();
-		br.readLine();
-		
-		Converter converter = new Converter();
-		Measure measure = converter.parseJstack(br);
-		measure.date = stackDate;
-		
-		System.out.println(measure.toString());
-		System.out.println(measure.threads.size());
+		analyzer.printAllMeasuresAllThreads();
 	}
 }

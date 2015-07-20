@@ -6,7 +6,7 @@ public class StacktraceItem {
 
 	@Override
 	public String toString() {
-		return "StacktraceItem [methodFqn=" + methodFqn + ", fileline=" + fileline + "]";
+		return "\t\t"+methodFqn + "("+fileline + ")";
 	}	
 
 }

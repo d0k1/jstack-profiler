@@ -19,9 +19,15 @@ public class ThreadInfo {
 	
 	@Override
 	public String toString() {
-		return "ThreadInfo [name=" + name + ", daemon=" + daemon + ", prio=" + prio + ", tid=" + tid + ", nid=" + nid
+		StringBuilder builder = new StringBuilder("\tThread [name=" + name + ", daemon=" + daemon + ", prio=" + prio + ", tid=" + tid + ", nid=" + nid
 				+ ", conditionPointer=" + conditionPointer + ", ownLock=" + ownLock + ", onwLockDetails="
 				+ onwLockDetails + ", state=" + state + ", waitFor=" + waitFor + ", waitForDetails=" + waitForDetails
-				+ ", stacktrace=" + stacktrace + "]";
+				+ "]:");
+		builder.append("\n");
+		for(StacktraceItem item:stacktrace) {
+			builder.append(item.toString()).append('\n');
+		}
+		
+		return builder.toString();
 	}
 }

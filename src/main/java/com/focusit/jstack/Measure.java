@@ -9,7 +9,11 @@ public class Measure {
 	public List<ThreadInfo> threads = new ArrayList<>();
 	@Override
 	public String toString() {
-		return "Measure [date=" + date + ", threads=" + threads + "]";
+		StringBuilder builder = new StringBuilder("Measure [Date=" + date + " Threads: "+threads.size()+ "]:\n");
+		
+		for(ThreadInfo info: threads) {
+			builder.append(info.toString()).append('\n');
+		}
+		return builder.toString();	
 	}
-	
 }
