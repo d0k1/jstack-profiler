@@ -15,12 +15,13 @@ public class ThreadInfo {
 	public String state;
 	public long waitFor;
 	public String waitForDetails;
+	public String state0;
 	public List<StacktraceItem> stacktrace = new ArrayList<>();
 	
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder("\tThread [name=" + name + ", daemon=" + daemon + ", prio=" + prio + ", tid=" + tid + ", nid=" + nid
-				+ ", conditionPointer=" + conditionPointer + ", ownLock=" + ownLock + ", onwLockDetails="
+				+ ", state0="+state0+", conditionPointer=" + conditionPointer + ", ownLock=" + ownLock + ", onwLockDetails="
 				+ onwLockDetails + ", state=" + state + ", waitFor=" + waitFor + ", waitForDetails=" + waitForDetails
 				+ "]:");
 		builder.append("\n");

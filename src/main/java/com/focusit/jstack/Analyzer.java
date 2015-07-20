@@ -5,8 +5,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -40,6 +41,7 @@ public class Analyzer {
 				}
 		    }
 		});
+		sortMeasuresByDate();
 		System.out.println("Loaded "+measures.size()+" jstack files");
 	}
 	
@@ -48,6 +50,25 @@ public class Analyzer {
 			System.out.println(measure.toString());
 		}
 	}
+	
+	private void sortMeasuresByDate(){
+		Collections.sort(measures, new Comparator<Measure>(){
+
+			@Override
+			public int compare(Measure o1, Measure o2) {
+				long d1 = o1.date.getTime();
+				long d2 = o2.date.getTime();
+				
+				if(d1<d2)
+					return -1;
+				
+				if(d1>d2)
+					return 1;
+				
+				return 0;
+			}});
+
+	}
 
 	public void printAllMeasuresRunningThreads(){
 		for(Measure measure:measures){
@@ -55,13 +76,30 @@ public class Analyzer {
 			
 			int running = 0;
 			for(ThreadInfo info: measure.threads) {
-				if(info.state.equalsIgnoreCase("RUNNING")){
+				if(info.state.equalsIgnoreCase("RUNNABLE")){
 					builder.append(info.toString()).append('\n');
 					running++;
 				}
 			}
 			System.out.println(builder.toString());
-			System.out.println("Running threads "+running+" of "+measure.threads.size()+" threads!");
+			System.out.println("Runnable threads "+running+" of "+measure.threads.size()+" threads!");
+		}
+	}
+
+	public void printAllMeasuresCountRunningThreads(){
+		
+		for(Measure measure:measures){
+			
+			int running = 0;
+			for(ThreadInfo info: measure.threads) {
+				if(info.state.equalsIgnoreCase("RUNNABLE")){
+					running++;
+				}
+			}
+			StringBuilder builder = new StringBuilder("Measure [Date=" + measure.date + " Threads: "+measure.threads.size()+" Runnable: ");
+			builder.append(""+running);
+			builder.append("]:\n");
+			System.out.println(builder.toString());
 		}
 	}
 }

@@ -7,7 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Converter {
-	private static final Pattern threadDaemonHeaderRegex = Pattern.compile("\\\"(.*)\\\"\\s+(daemon\\s+)?prio=(\\d+)\\s+tid=0x(\\w+)\\s+nid=0x(\\w+)\\s+waiting\\s+on\\s+condition\\s+\\[0x(\\w+)\\]");
+	private static final Pattern threadDaemonHeaderRegex = Pattern.compile("\\\"(.*)\\\"\\s+(daemon\\s+)?prio=(\\d+)\\s+tid=0x(\\w+)\\s+nid=0x(\\w+)\\s+(.*)\\s+\\[0x(\\w+)\\]");
 	private static final Pattern theadStateRegex = Pattern.compile("\\s+java\\.lang\\.Thread\\.State\\:\\s+(\\w+).*");
 	private static final Pattern waitForRegex = Pattern.compile("\\t-\\s+.*wait for\\s+\\<0x(.*)\\>\\s+\\(a\\s+(.*)\\)");
 	private static final Pattern lockedObjectedsRegex = Pattern.compile("\\s+Locked ownable synchronizers\\:");
@@ -26,7 +26,8 @@ public class Converter {
 		result.prio=Integer.parseInt(m.group(3));
 		result.tid=Long.parseLong(m.group(4), 16);
 		result.nid=Long.parseLong(m.group(5), 16);
-		result.conditionPointer = Long.parseLong(m.group(6), 16);
+		result.state0 = m.group(6);
+		result.conditionPointer = Long.parseLong(m.group(7), 16);
 		return result;
 	}
 	
