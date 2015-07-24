@@ -26,7 +26,6 @@ public class App {
 
 		Analyzer analyzer = new Analyzer();
 		analyzer.readJstacks(cmd.getOptionValue('d'));
-		
-		analyzer.printAllMeasuresRunnableThreadsFilteredByStackItem("ru.naumen");
+		analyzer.printAllMeasuresStuckThreads(2, true);
 	}
 }

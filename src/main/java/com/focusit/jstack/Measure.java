@@ -8,6 +8,7 @@ import java.util.Map;
 
 public class Measure {
 	public Date date;
+	public String name;
 	private List<ThreadInfo> threads = new ArrayList<>();
 	private Map<Long, ThreadInfo> threadMap = new HashMap<>();
 	@Override

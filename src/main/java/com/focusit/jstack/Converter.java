@@ -7,7 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Converter {
-	private static final Pattern threadDaemonHeaderRegex = Pattern.compile("\\\"(.*)\\\"\\s+(daemon\\s+)?prio=(\\d+)\\s+tid=0x(\\w+)\\s+nid=0x(\\w+)\\s+(.*)\\s+\\[0x(\\w+)\\]");
+	private static final Pattern threadHeaderRegex = Pattern.compile("\\\"(.*)\\\"\\s+(\\#(\\d+)\\s+)?(daemon\\s+)?prio=(\\d+)(\\s+os_prio\\=(\\d+))?\\s+tid=0x(\\w+)\\s+nid=0x(\\w+)\\s+(.*)\\s+\\[0x(\\w+)\\]");
 	private static final Pattern theadStateRegex = Pattern.compile("\\s+java\\.lang\\.Thread\\.State\\:\\s+(\\w+).*");
 	private static final Pattern waitForRegex = Pattern.compile("\\t-\\s+.*wait for\\s+\\<0x(.*)\\>\\s+\\(a\\s+(.*)\\)");
 	private static final Pattern lockedObjectedsRegex = Pattern.compile("\\s+Locked ownable synchronizers\\:");
@@ -22,12 +22,14 @@ public class Converter {
 	private ThreadInfo parseThreadHead(String line, Matcher m) {
 		ThreadInfo result = new ThreadInfo();
 		result.name = m.group(1);
-		result.daemon = m.group(2)!=null && m.group(2).trim().length()>0;
-		result.prio=Integer.parseInt(m.group(3));
-		result.tid=Long.parseLong(m.group(4), 16);
-		result.nid=Long.parseLong(m.group(5), 16);
-		result.state0 = m.group(6);
-		result.conditionPointer = Long.parseLong(m.group(7), 16);
+		result.number = m.group(3)!=null? Integer.parseInt(m.group(3)) : -1;
+		result.os_prio = m.group(7)!=null? Integer.parseInt(m.group(7)): -1;
+		result.daemon = m.group(4)!=null && m.group(4).trim().length()>0;
+		result.prio=Integer.parseInt(m.group(5));
+		result.tid=Long.parseLong(m.group(8), 16);
+		result.nid=Long.parseLong(m.group(9), 16);
+		result.state0 = m.group(10);
+		result.conditionPointer = Long.parseLong(m.group(11), 16);
 		return result;
 	}
 	
@@ -73,7 +75,7 @@ public class Converter {
 			if(line.trim().length()==0)
 				continue;
 			
-			threadHead = threadDaemonHeaderRegex.matcher(line);
+			threadHead = threadHeaderRegex.matcher(line);
 			if(threadHead.matches()){
 				break;
 			}
@@ -102,6 +104,11 @@ public class Converter {
 			if(line.trim().length()==0)
 				continue;
 			
+			if(threadHeaderRegex.matcher(line).matches()){
+				br.pushBack();
+				return thread;
+			}
+			
 			if(stacktraceRegex.matcher(line).matches()){
 				stackMatcher = stacktraceRegex.matcher(line);
 				stackMatcher.matches();
@@ -116,18 +123,23 @@ public class Converter {
 		}
 		
 		line = br.readLine();
-		if(noLockedObjectsRegex.matcher(line).matches()){
-			Matcher m = noLockedObjectsRegex.matcher(line);
-			m.matches();
-			thread = parseOwnedLock(thread, line, m);
+		if(line!=null){
+			if(threadHeaderRegex.matcher(line).matches()){
+				br.pushBack();
+				return thread;
+			}
+			if(noLockedObjectsRegex.matcher(line).matches()){
+				Matcher m = noLockedObjectsRegex.matcher(line);
+				m.matches();
+				thread = parseOwnedLock(thread, line, m);
+			}
+			
+			if(haveLockedObjectsRegex.matcher(line).matches()){
+				Matcher m = haveLockedObjectsRegex.matcher(line);
+				m.matches();
+				thread = parseOwnedLock(thread, line, m);
+			}
 		}
-		
-		if(haveLockedObjectsRegex.matcher(line).matches()){
-			Matcher m = haveLockedObjectsRegex.matcher(line);
-			m.matches();
-			thread = parseOwnedLock(thread, line, m);
-		}
-		
 		return thread;
 	}
 	
@@ -136,13 +148,18 @@ public class Converter {
 		Measure result = new Measure();
 		
 		ThreadInfo thread = parseThread(br);
-		result.addThread(thread);
+		
+		if(thread!=null){
+			thread.measure = result;
+			result.addThread(thread);
+		}
 		
 		while(thread!=null){
 			thread = parseThread(br);
 			if(thread==null){
 				break;
 			}
+			thread.measure = result;
 			result.addThread(thread);
 		}
 		return result;

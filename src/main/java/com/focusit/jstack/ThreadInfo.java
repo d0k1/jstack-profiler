@@ -6,6 +6,8 @@ import java.util.List;
 public class ThreadInfo {
 	public String name;
 	public boolean daemon;
+	public int number;
+	public int os_prio;
 	public int prio;
 	public long tid;
 	public long nid;
@@ -16,16 +18,23 @@ public class ThreadInfo {
 	public long waitFor;
 	public String waitForDetails;
 	public String state0;
+	public Measure measure;
 	public List<StacktraceItem> stacktrace = new ArrayList<>();
 	
 	public long filteredTo = -1;
-	
+	public static final String RUNNABLE = "RUNNABLE";
+
+	public long getIdentity(){
+		return nid;
+	}
+
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder("\tThread [name=" + name + ", daemon=" + daemon + ", prio=" + prio + ", tid=" + tid + ", nid=" + nid
-				+ ", state0="+state0+", conditionPointer=" + conditionPointer + ", ownLock=" + ownLock + ", onwLockDetails="
-				+ onwLockDetails + ", state=" + state + ", waitFor=" + waitFor + ", waitForDetails=" + waitForDetails
-				+ "]:");
+		StringBuilder builder = new StringBuilder("ThreadInfo [name=" + name + ", daemon=" + daemon + ", number=" + number + ", os_prio=" + os_prio
+				+ ", prio=" + prio + ", tid=" + tid + ", nid=" + nid + ", conditionPointer=" + conditionPointer
+				+ ", ownLock=" + ownLock + ", onwLockDetails=" + onwLockDetails + ", state=" + state + ", waitFor="
+				+ waitFor + ", waitForDetails=" + waitForDetails + ", state0=" + state0 + "]:");
+		
 		builder.append("\n");
 		int pos = 0;
 		for(StacktraceItem item:stacktrace) {
@@ -36,14 +45,13 @@ public class ThreadInfo {
 				break;
 			}
 		}
-		
 		return builder.toString();
 	}
-	
-	public long getIdentity(){
-		return nid;
-	}
 
+	public boolean isRunnable(){
+		return state.equalsIgnoreCase(RUNNABLE);
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
